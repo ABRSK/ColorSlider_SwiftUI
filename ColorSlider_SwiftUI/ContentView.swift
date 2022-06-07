@@ -71,15 +71,7 @@ struct ColorSliderView: View {
             Slider(value: $colorValue, in: 0...255, step: 1)
                 .tint(color)
                 .animation(.default, value: colorValue)
-            TextField("0", value: $colorValue, format: .number.rounded(rule: .toNearestOrEven, increment: 1))
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 50)
-                .keyboardType(.numberPad)
-                .onChange(of: colorValue) { newValue in
-                    if newValue > 255 || Int(newValue) != 0 {
-                        colorValue = 255
-                    }
-                }
+            SliderTextField(colorValue: $colorValue)
         }
     }
 }
@@ -87,5 +79,30 @@ struct ColorSliderView: View {
 extension View {
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+struct SliderTextField: View {
+    @Binding var colorValue: Double
+    @State private var textValue = ""
+    
+    var body: some View {
+        TextField("0", text: $textValue)
+            .textFieldStyle(.roundedBorder)
+            .frame(width: 50)
+            .keyboardType(.numberPad)
+            .onAppear {
+                textValue = String(lround(colorValue))
+            }
+            .onChange(of: colorValue) { _ in
+                textValue = String(lround(colorValue))
+            }
+            .onChange(of: textValue) { newValue in
+                if let doubleValue = Double(newValue), doubleValue <= 255 {
+                    colorValue = doubleValue
+                } else {
+                    colorValue = 255
+                }
+            }
     }
 }
